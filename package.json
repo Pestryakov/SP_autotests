@@ -15,5 +15,8 @@
   "devDependencies": {
     "@playwright/test": "^1.55.0",
     "@types/node": "^24.3.0"
+  },
+  "dependencies": {
+    "node-telegram-bot-api": "^0.66.0"
   }
 }

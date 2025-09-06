@@ -1,5 +1,5 @@
 import { test, BrowserContextOptions } from '@playwright/test';
-import { proxy } from './data/proxy';
+import { proxy } from '../data/proxy';
 
 interface ProxyConfig {
   geo: string;
