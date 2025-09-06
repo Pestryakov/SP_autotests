@@ -2,7 +2,12 @@
   "name": "sp_autotests",
   "version": "1.0.0",
   "main": "index.js",
-  "scripts": {},
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "playwright test",
+    "test:webMain": "playwright test tests/webMainPage.spec.ts"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
