@@ -6,30 +6,19 @@ import dotenv from 'dotenv';
 import { proxy, ProxyConfig } from '../data/proxy';
 import fs from 'fs';
 
-// Загружаем переменные из .env
 dotenv.config();
 
-// ───────────────────────────────
-// Telegram init
-// ───────────────────────────────
 const token: string = process.env.TELEGRAM_TOKEN!;
 const bot = new TelegramBot(token, { polling: false });
 const chatIds: string[] = [process.env.TELEGRAM_CHAT_ID!];
 
-// ───────────────────────────────
-// Тест
-// ───────────────────────────────
 test('Регистрация нового пользователя и проверка FastDep', async ({ browser }) => {
+  const startTime = Date.now();
   test.setTimeout(120000);
 
-  // Берём прокси по гео из .env
   const geo = process.env.PROXY_GEO!;
-  const proxyLogin = process.env.PROXY_LOGIN!;
-  const proxyPass = process.env.PROXY_PASS!;
-
   const proxyConfig: ProxyConfig | undefined = proxy.find(p => p.geo === geo);
   if (!proxyConfig) throw new Error(`Proxy for geo ${geo} not found`);
-
   const [serverHost, port] = proxyConfig.server.split(':');
 
   const contextOptions: BrowserContextOptions = {
@@ -37,36 +26,30 @@ test('Регистрация нового пользователя и прове
     locale: proxyConfig.localybrowser,
     proxy: {
       server: `http://${serverHost}:${port}`,
-      username: proxyLogin,
-      password: proxyPass,
+      username: proxyConfig.login,
+      password: proxyConfig.password,
     },
   };
 
   const context = await browser.newContext(contextOptions);
   const page = await context.newPage();
 
-  // Локаторы
   const locators = locatorsAllProject.find(p => p.project === 'kaasinoStageWP');
   if (!locators) throw new Error('Locators for project not found');
 
-  // Переход на сайт
   const response = await page.goto('https://kaasino.com', { timeout: 80000, waitUntil: 'load' });
   console.log('🌍 Main page status:', response?.status());
 
-  // Генерация данных
   const email = generateRandomEmailTest();
   const password = generateRandomPassword();
-
   console.log('📧 Generated email:', email);
   console.log('🔑 Generated password:', password);
 
-  // Регистрация
   await page.click(locators.locatorButtonReg);
   await page.fill(locators.locatorRegFormEmail, email);
   await page.fill(locators.locatorRegFormPassword, password);
   await page.click(locators.locatorRegFormSignUpBtn);
 
-  // Проверка fast dep
   const fastDepBtn = page.locator(locators.locatorFastDepBtn);
 
   let message: string;
@@ -80,21 +63,27 @@ test('Регистрация нового пользователя и прове
     throw err;
   }
 
-  // Создаём папку для скриншотов, если её нет
+  await page.waitForTimeout(5000);
+
   const screenshotDir = 'screenNewRegKaasProd';
   if (!fs.existsSync(screenshotDir)) fs.mkdirSync(screenshotDir);
-
   const screenshotPath = `${screenshotDir}/kaasino_registration_${Date.now()}.png`;
   await page.screenshot({ path: screenshotPath, fullPage: true });
 
-  // Отправка уведомления в Telegram
+  const endTime = Date.now();
+  const durationSec = Math.round((endTime - startTime) / 1000);
+
   const sendMessageOptions: SendMessageOptions = {
     parse_mode: 'HTML',
     disable_web_page_preview: true,
   };
 
+  const fullMessage = `${message}\n⏱️ Время выполнения теста: ${durationSec} секунд (~${Math.round(durationSec / 60)} минут)`;
+
+  console.log('⏱️', fullMessage); // ⬅️ лог для GitHub Actions
+
   for (const chatId of chatIds) {
-    await bot.sendMessage(chatId, message, sendMessageOptions);
+    await bot.sendMessage(chatId, fullMessage, sendMessageOptions);
   }
 
   await context.close();

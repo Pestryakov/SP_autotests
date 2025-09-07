@@ -2,18 +2,18 @@ name: Playwright Tests
 
 on:
   schedule:
-    # Каждый день в 06:00 и 15:00 UTC (09:00 и 18:00 МСК)
     - cron: '0 6 * * *'
     - cron: '0 15 * * *'
-  workflow_dispatch: # ручной запуск через GitHub UI
+  workflow_dispatch:
 
 jobs:
   test:
-    timeout-minutes: 60
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     env:
       TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      PROXY_GEO: ${{ secrets.PROXY_GEO }}
       PROXY_LOGIN: ${{ secrets.PROXY_LOGIN }}
       PROXY_PASS: ${{ secrets.PROXY_PASS }}
     steps:
@@ -26,7 +26,7 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
       - name: Run Playwright tests
-        run: npx playwright test tests/prodReg.spec.ts
+        run: npx playwright test tests/prodReg.spec.ts --reporter=list
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
