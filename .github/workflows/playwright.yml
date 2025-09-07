@@ -2,7 +2,7 @@ name: Playwright Tests
 
 on:
   schedule:
-    - cron: '0 */6 * * *'
+    - cron: '0 */6 * * *' # каждые 6 часов
   workflow_dispatch:
 
 jobs:
@@ -10,22 +10,43 @@ jobs:
     timeout-minutes: 5
     runs-on: ubuntu-latest
     env:
+      # ────────── Telegram ──────────
       TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
+      # ────────── Proxy ──────────
       PROXY_GEO: ${{ secrets.PROXY_GEO }}
       PROXY_LOGIN: ${{ secrets.PROXY_LOGIN }}
       PROXY_PASS: ${{ secrets.PROXY_PASS }}
+
+      # ────────── Stage Slack ──────────
+      SLACK_BOT_TOKEN_STAGE: ${{ secrets.SLACK_BOT_TOKEN_STAGE }}
+      SLACK_CHANNEL_ID_STAGE: ${{ secrets.SLACK_CHANNEL_ID_STAGE }}
+
+      # ────────── Prod Slack ──────────
+      SLACK_BOT_TOKEN_PROD: ${{ secrets.SLACK_BOT_TOKEN_PROD }}
+      SLACK_CHANNEL_ID_PROD: ${{ secrets.SLACK_CHANNEL_ID_PROD }}
+
+      # ────────── Stage HTTP Auth ──────────
+      STAGE_HTTP_USER: ${{ secrets.STAGE_HTTP_USER }}
+      STAGE_HTTP_PASS: ${{ secrets.STAGE_HTTP_PASS }}
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: lts/*
+
       - name: Install dependencies
         run: npm ci
+
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
+
       - name: Run Playwright tests
         run: npx playwright test tests/prodReg.spec.ts --reporter=list
+
       - uses: actions/upload-artifact@v4
         if: ${{ !cancelled() }}
         with:
