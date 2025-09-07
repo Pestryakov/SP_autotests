@@ -1,7 +1,30 @@
-
-# Playwright
+# ───────────────────────────────
+# Node.js
+# ───────────────────────────────
 node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ───────────────────────────────
+# Playwright
+# ───────────────────────────────
 /test-results/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# ───────────────────────────────
+# Env files (секреты)
+# ───────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ───────────────────────────────
+# Misc
+# ───────────────────────────────
+.DS_Store
+dist/
+coverage/

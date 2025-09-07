@@ -1,4 +1,4 @@
-interface ProxyConfig {
+export interface ProxyConfig {
     geo: string;
     server: string;
     login: string;
@@ -11,7 +11,7 @@ interface ProxyConfig {
     { geo: 'Australia', server: '45.141.185.39:2597', login: 'user164888', password: 'f6qowk', localybrowser: "en-AU" },
     { geo: 'Denmark', server: '45.159.180.251:3347', login: 'user164888', password: 'f6qowk', localybrowser: "de" },
     { geo: 'NewZealand', server: '166.1.104.115:7136', login: 'user164888', password: 'f6qowk', localybrowser: "en" },
-    { geo: 'Germany', server: '146.247.115.110:9939', login: 'user164888', password: 'f6qowk', localybrowser: "de" },
+    { geo: 'Germany', server: '31.6.53.153:4474', login: 'user164888', password: 'f6qowk', localybrowser: "de" },
     { geo: 'Switzerland', server: '176.101.58.86:2365', login: 'user164888', password: 'f6qowk', localybrowser: "de" },
     { geo: 'Canada', server: '185.205.221.227:3942', login: 'user164888', password: 'f6qowk', localybrowser: "en-CA" },
     { geo: 'UnitedArabEmirates', server: '31.58.229.18:2536', login: 'user164888', password: 'f6qowk', localybrowser: "ar" },
