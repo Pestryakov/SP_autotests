@@ -2,17 +2,36 @@ import { test, BrowserContextOptions, expect } from '@playwright/test';
 import { locatorsAllProject } from '../data/projectsLocators';
 import { generateRandomEmailTest, generateRandomPassword } from '../data/genMailAndPass';
 import TelegramBot, { SendMessageOptions } from 'node-telegram-bot-api';
+import { WebClient } from '@slack/web-api';
 import dotenv from 'dotenv';
 import { proxy, ProxyConfig } from '../data/proxy';
 import fs from 'fs';
 
 dotenv.config();
 
+// ────────── Настройка Telegram ──────────
 const token: string = process.env.TELEGRAM_TOKEN!;
 const bot = new TelegramBot(token, { polling: false });
 const chatIds: string[] = [process.env.TELEGRAM_CHAT_ID!];
 
-test('Регистрация нового пользователя и проверка FastDep', async ({ browser }) => {
+// ────────── Настройка Slack ──────────
+const slackClient = new WebClient(process.env.SLACK_BOT_TOKEN_PROD);
+const slackChannel = process.env.SLACK_CHANNEL_ID_PROD;
+
+async function sendSlackMessage(message: string) {
+  try {
+    await slackClient.chat.postMessage({
+      channel: slackChannel!,
+      text: message,
+      mrkdwn: true, // включаем markdown
+    });
+    console.log('✅ Сообщение отправлено в Slack (Prod)');
+  } catch (err) {
+    console.error('❌ Ошибка при отправке в Slack (Prod):', err);
+  }
+}
+
+test('Регистрация нового пользователя и проверка FastDep (Prod)', async ({ browser }) => {
   const startTime = Date.now();
   test.setTimeout(120000);
 
@@ -55,10 +74,10 @@ test('Регистрация нового пользователя и прове
   let message: string;
   try {
     await expect(fastDepBtn).toBeVisible({ timeout: 60000 });
-    message = `✅ Регистрация успешна!\n📧 Email: <b>${email}</b>\n🔑 Password: <b>${password}</b>\nFastDep найден.`;
+    message = `✅ Регистрация успешна!\n📧 Email: ${email}\n🔑 Password: ${password}\nFastDep после реги найден.`;
     console.log(message);
   } catch (err) {
-    message = `❌ Регистрация провалилась!\n📧 Email: <b>${email}</b>\n🔑 Password: <b>${password}</b>\nFastDep не найден.`;
+    message = `❌ Регистрация провалилась!\n📧 Email: ${email}\n🔑 Password: ${password}\nFastDep не найден.`;
     console.error(message);
     throw err;
   }
@@ -72,19 +91,21 @@ test('Регистрация нового пользователя и прове
 
   const endTime = Date.now();
   const durationSec = Math.round((endTime - startTime) / 1000);
+  const fullMessage = `${message}\n⏱️ Время выполнения теста: ${durationSec} секунд (~${Math.round(durationSec / 60)} минут)`;
 
+  console.log('⏱️', fullMessage); // лог для GitHub Actions
+
+  // ────────── Отправка в Telegram ──────────
   const sendMessageOptions: SendMessageOptions = {
     parse_mode: 'HTML',
     disable_web_page_preview: true,
   };
-
-  const fullMessage = `${message}\n⏱️ Время выполнения теста: ${durationSec} секунд (~${Math.round(durationSec / 60)} минут)`;
-
-  console.log('⏱️', fullMessage); // ⬅️ лог для GitHub Actions
-
   for (const chatId of chatIds) {
     await bot.sendMessage(chatId, fullMessage, sendMessageOptions);
   }
+
+  // ────────── Отправка в Slack ──────────
+  await sendSlackMessage(fullMessage);
 
   await context.close();
 });

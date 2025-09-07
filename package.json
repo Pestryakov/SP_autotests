@@ -17,6 +17,7 @@
     "@types/node": "^24.3.0"
   },
   "dependencies": {
+    "@slack/web-api": "^7.10.0",
     "dotenv": "^17.2.2",
     "node-telegram-bot-api": "^0.66.0"
   }

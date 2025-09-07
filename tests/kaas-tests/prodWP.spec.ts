@@ -46,7 +46,7 @@ test('Access stage.kaasino.com with Netherlands proxy and take screenshot', asyn
   });
   console.log('Main page status:', response?.status());
 
-  await page.waitForTimeout(10000);
+  await page.waitForTimeout(5000);
 
   await page.screenshot({
     path: `screenshotsProdWP/kaasino_screenshot_${test.info().project.name.replace(/ /g, "_")}.png`,

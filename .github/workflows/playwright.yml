@@ -2,13 +2,12 @@ name: Playwright Tests
 
 on:
   schedule:
-    - cron: '0 6 * * *'
-    - cron: '0 15 * * *'
+    - cron: '0 */6 * * *'
   workflow_dispatch:
 
 jobs:
   test:
-    timeout-minutes: 10
+    timeout-minutes: 5
     runs-on: ubuntu-latest
     env:
       TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
