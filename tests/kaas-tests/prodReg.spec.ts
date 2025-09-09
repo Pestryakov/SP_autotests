@@ -99,15 +99,15 @@ test('Регистрация нового пользователя и прове
   const telegramMessage = 
     `🌍 <b>${geo}</b>\n` +
     `${success ? '✅ Регистрация успешна! FastDep найден.' : '❌ Регистрация провалилась! FastDep не найден.'}\n` +
-    `📧 <b>Email:</b> ${email}\n` +
-    `🔑 <b>Password:</b> ${password}\n` +
+    `📧 Email: ${email}\n` +
+    `🔑 Password: ${password}\n` +
     `⏱️ Время выполнения теста: ${durationSec} секунд (~${Math.round(durationSec / 60)} минут)`;
 
   const slackMessage = 
     `*🌍 ${geo}*\n` +
     `${success ? '✅ Регистрация успешна! FastDep найден.' : '❌ Регистрация провалилась! FastDep не найден.'}\n` +
-    `📧 *Email:* ${email}\n` +
-    `🔑 *Password:* ${password}\n` +
+    `📧 Email: ${email}\n` +
+    `🔑 Password: ${password}\n` +
     `⏱️ Время выполнения теста: ${durationSec} секунд (~${Math.round(durationSec / 60)} минут)`;
 
   console.log('⏱️', telegramMessage);

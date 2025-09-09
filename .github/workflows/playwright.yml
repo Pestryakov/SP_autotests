@@ -7,17 +7,13 @@ on:
 
 jobs:
   test:
-    timeout-minutes: 5
+    timeout-minutes: 15
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        geo: [Netherlands, UnitedKingdom, Germany] 
     env:
       TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
 
       # ────────── Proxy ──────────
-      PROXY_GEO: ${{ matrix.geo }}   
       PROXY_LOGIN: ${{ secrets.PROXY_LOGIN }}
       PROXY_PASS: ${{ secrets.PROXY_PASS }}
 
@@ -46,5 +42,12 @@ jobs:
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps
 
-      - name: Run Playwright tests (${{ matrix.geo }})
-        run: npx playwright test tests/prodReg.spec.ts --reporter=list
+      # ────────── Последовательный запуск по гео ──────────
+      - name: Run Playwright NL
+        run: PROXY_GEO=Netherlands npx playwright test tests/prodReg.spec.ts --reporter=list
+
+      - name: Run Playwright UK
+        run: PROXY_GEO=UnitedKingdom npx playwright test tests/prodReg.spec.ts --reporter=list
+
+      - name: Run Playwright DE
+        run: PROXY_GEO=Germany npx playwright test tests/prodReg.spec.ts --reporter=list
