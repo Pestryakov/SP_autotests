@@ -25,7 +25,7 @@ async function sendSlackMessage(message: string, success: boolean, geo: string) 
       attachments: [
         {
           color: success ? "good" : "danger",
-          text: `*🌍 ${geo}*\n${message}`,
+          text: message,
           mrkdwn_in: ["text"],
         },
       ],
@@ -76,18 +76,13 @@ test('Регистрация нового пользователя и прове
 
   const fastDepBtn = page.locator(locators.locatorFastDepBtn);
 
-  let message: string;
   let success = false;
 
   try {
     await expect(fastDepBtn).toBeVisible({ timeout: 60000 });
-    message = `✅ Регистрация успешна!\n📧 Email: ${email}\n🔑 Password: ${password}\nFastDep после реги найден.`;
     success = true;
-    console.log(message);
-  } catch (err) {
-    message = `❌ Регистрация провалилась!\n📧 Email: ${email}\n🔑 Password: ${password}\nFastDep не найден.`;
+  } catch {
     success = false;
-    console.error(message);
   }
 
   await page.waitForTimeout(5000);
@@ -99,9 +94,23 @@ test('Регистрация нового пользователя и прове
 
   const endTime = Date.now();
   const durationSec = Math.round((endTime - startTime) / 1000);
-  const fullMessage = `🌍 <b>${geo}</b>\n${message}\n⏱️ Время выполнения теста: ${durationSec} секунд (~${Math.round(durationSec / 60)} минут)`;
 
-  console.log('⏱️', fullMessage); // лог для GitHub Actions
+  // ────────── Формируем сообщения ──────────
+  const telegramMessage = 
+    `🌍 <b>${geo}</b>\n` +
+    `${success ? '✅ Регистрация успешна! FastDep найден.' : '❌ Регистрация провалилась! FastDep не найден.'}\n` +
+    `📧 <b>Email:</b> ${email}\n` +
+    `🔑 <b>Password:</b> ${password}\n` +
+    `⏱️ Время выполнения теста: ${durationSec} секунд (~${Math.round(durationSec / 60)} минут)`;
+
+  const slackMessage = 
+    `*🌍 ${geo}*\n` +
+    `${success ? '✅ Регистрация успешна! FastDep найден.' : '❌ Регистрация провалилась! FastDep не найден.'}\n` +
+    `📧 *Email:* ${email}\n` +
+    `🔑 *Password:* ${password}\n` +
+    `⏱️ Время выполнения теста: ${durationSec} секунд (~${Math.round(durationSec / 60)} минут)`;
+
+  console.log('⏱️', telegramMessage);
 
   // ────────── Отправка в Telegram ──────────
   const sendMessageOptions: SendMessageOptions = {
@@ -109,11 +118,13 @@ test('Регистрация нового пользователя и прове
     disable_web_page_preview: true,
   };
   for (const chatId of chatIds) {
-    await bot.sendMessage(chatId, fullMessage, sendMessageOptions);
+    await bot.sendMessage(chatId, telegramMessage, sendMessageOptions);
   }
 
-  // ────────── Отправка в Slack ──────────
-  await sendSlackMessage(fullMessage, success, geo);
+  // ────────── Отправка в Slack только на CI ──────────
+  if (process.env.CI) {
+    await sendSlackMessage(slackMessage, success, geo);
+  }
 
   await context.close();
 });
