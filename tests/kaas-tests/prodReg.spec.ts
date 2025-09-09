@@ -18,12 +18,17 @@ const chatIds: string[] = [process.env.TELEGRAM_CHAT_ID!];
 const slackClient = new WebClient(process.env.SLACK_BOT_TOKEN_PROD);
 const slackChannel = process.env.SLACK_CHANNEL_ID_PROD;
 
-async function sendSlackMessage(message: string) {
+async function sendSlackMessage(message: string, success: boolean, geo: string) {
   try {
     await slackClient.chat.postMessage({
       channel: slackChannel!,
-      text: message,
-      mrkdwn: true, // включаем markdown
+      attachments: [
+        {
+          color: success ? "good" : "danger",
+          text: `*🌍 ${geo}*\n${message}`,
+          mrkdwn_in: ["text"],
+        },
+      ],
     });
     console.log('✅ Сообщение отправлено в Slack (Prod)');
   } catch (err) {
@@ -72,26 +77,29 @@ test('Регистрация нового пользователя и прове
   const fastDepBtn = page.locator(locators.locatorFastDepBtn);
 
   let message: string;
+  let success = false;
+
   try {
     await expect(fastDepBtn).toBeVisible({ timeout: 60000 });
     message = `✅ Регистрация успешна!\n📧 Email: ${email}\n🔑 Password: ${password}\nFastDep после реги найден.`;
+    success = true;
     console.log(message);
   } catch (err) {
     message = `❌ Регистрация провалилась!\n📧 Email: ${email}\n🔑 Password: ${password}\nFastDep не найден.`;
+    success = false;
     console.error(message);
-    throw err;
   }
 
   await page.waitForTimeout(5000);
 
   const screenshotDir = 'screenNewRegKaasProd';
   if (!fs.existsSync(screenshotDir)) fs.mkdirSync(screenshotDir);
-  const screenshotPath = `${screenshotDir}/kaasino_registration_${Date.now()}.png`;
+  const screenshotPath = `${screenshotDir}/kaasino_registration_${geo}_${Date.now()}.png`;
   await page.screenshot({ path: screenshotPath, fullPage: true });
 
   const endTime = Date.now();
   const durationSec = Math.round((endTime - startTime) / 1000);
-  const fullMessage = `${message}\n⏱️ Время выполнения теста: ${durationSec} секунд (~${Math.round(durationSec / 60)} минут)`;
+  const fullMessage = `🌍 <b>${geo}</b>\n${message}\n⏱️ Время выполнения теста: ${durationSec} секунд (~${Math.round(durationSec / 60)} минут)`;
 
   console.log('⏱️', fullMessage); // лог для GitHub Actions
 
@@ -105,7 +113,7 @@ test('Регистрация нового пользователя и прове
   }
 
   // ────────── Отправка в Slack ──────────
-  await sendSlackMessage(fullMessage);
+  await sendSlackMessage(fullMessage, success, geo);
 
   await context.close();
 });

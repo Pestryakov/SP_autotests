@@ -6,7 +6,11 @@
   "scripts": {
     "build": "tsc",
     "test": "playwright test",
-    "test:webMain": "playwright test tests/webMainPage.spec.ts"
+    "test:webMain": "playwright test tests/webMainPage.spec.ts",
+    "test:nl": "cross-env PROXY_GEO=Netherlands npx playwright test tests/prodReg.spec.ts --reporter=list",
+    "test:uk": "cross-env PROXY_GEO=UnitedKingdom npx playwright test tests/prodReg.spec.ts --reporter=list",
+    "test:de": "cross-env PROXY_GEO=Germany npx playwright test tests/prodReg.spec.ts --reporter=list",
+    "test:all": "npm run test:nl && npm run test:uk && npm run test:de"
   },
   "keywords": [],
   "author": "",
@@ -14,7 +18,8 @@
   "description": "",
   "devDependencies": {
     "@playwright/test": "^1.55.0",
-    "@types/node": "^24.3.0"
+    "@types/node": "^24.3.0",
+    "cross-env": "^10.0.0"
   },
   "dependencies": {
     "@slack/web-api": "^7.10.0",
